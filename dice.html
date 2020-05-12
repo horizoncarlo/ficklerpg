@@ -1,0 +1,719 @@
+<!-- Version 0.91 -->
+<html>
+<head>
+    <title>Fickle RPG - Dice Roller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        /* Fickle logo dark green:      #2D7575 */
+        /* Fickle rules header green:   #47B8B8 */
+    
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: monospace;
+            font-size: 16px;
+            overflow-x: auto;
+            overflow-y: scroll;
+            background: linear-gradient(#2D7575 40%, black 100%);
+        }
+        
+        button {
+            font-size: 1em;
+        }
+        
+        button:hover {
+            opacity: 0.75;
+        }
+        
+        a, a:visited {
+            text-decoration: underline;
+        }
+        
+        a {
+            color: #47B8B8;
+        }
+        
+        a:visited {
+            color: #2D7575;
+        }
+        
+        .headerBox {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 5px 0 5px 0;
+            text-align: center;
+            font-size: 0.85em;
+            color: #47B8B8;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid #000000;
+            width: 100%;
+        }
+        
+        .headerButton {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+        }
+        
+        .successMessage, .flatMessage {
+            color: white;
+        }
+        
+        .successMessage {
+            font-size: 2em;
+        }
+        
+        .successNum {
+            font-size: 2.2em;
+            font-weight: bold;
+            text-shadow: 0 0 10px green;
+        }
+        
+        .promptHeader {
+            background-color: #47B8B8;
+            color: white;
+            text-shadow: 1px 1px black;
+            font-size: 2em;
+            padding: 5px 5px 5px 15px;
+            border: 1px solid black;
+        }
+        
+        .centerBox, .promptBox {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -ms-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translate(-50%,-50%);
+            transform: translate(-50%,-50%);
+        }
+        
+        .centerBox {
+            background: rgba(0,0,0,0.75);
+            padding: 50px 90px 80px 90px;
+            border: 3px solid #47B8B8;
+            border-radius: 200px;
+        }
+        
+        .promptBox {
+            width: 80%;
+            max-width: 800px;
+            vertical-align: middle;
+            background-color: white;
+            -webkit-box-shadow: 10px 10px 12px 0px rgba(0,0,0,0.5);
+            -moz-box-shadow: 10px 10px 12px 0px rgba(0,0,0,0.5);
+            box-shadow: 10px 10px 12px 0px rgba(0,0,0,0.5);
+        }
+        
+        .promptContent {
+            padding: 15px;
+            border: 1px solid black;
+            border-top: 0;
+            min-height: 200px;
+        }
+        
+        .stepNote {
+            font-size: 0.5em;
+            text-shadow: none;
+        }
+        
+        .medDropdown {
+            font-size: 1.5em;
+        }
+        
+        .bigDropdown {
+            font-size: 1.8em;
+            min-width: 125px;
+        }
+        
+        /* Mobile slum bois */
+        @media only screen and (max-width: 680px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .promptBox {
+                width: 96%;
+                max-width: none;
+            }
+            
+            .promptHeader {
+                font-size: 1.5em;
+            }
+            
+            .centerBox {
+                width: 96%;
+                padding: 15px 0 15px 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+    
+    <script type="text/javascript">
+        // Better random number generator, all squished up and minified
+        var MersenneTwister=function(t){null==t&&(t=(new Date).getTime()),this.N=624,this.M=397,this.MATRIX_A=2567483615,this.UPPER_MASK=2147483648,this.LOWER_MASK=2147483647,this.mt=new Array(this.N),this.mti=this.N+1,this.init_genrand(t)};MersenneTwister.prototype.init_genrand=function(t){for(this.mt[0]=t>>>0,this.mti=1;this.mti<this.N;this.mti++){t=this.mt[this.mti-1]^this.mt[this.mti-1]>>>30;this.mt[this.mti]=(1812433253*((4294901760&t)>>>16)<<16)+1812433253*(65535&t)+this.mti,this.mt[this.mti]>>>=0}},MersenneTwister.prototype.init_by_array=function(t,i){var s,h,m;for(this.init_genrand(19650218),s=1,h=0,m=this.N>i?this.N:i;m;m--){var n=this.mt[s-1]^this.mt[s-1]>>>30;this.mt[s]=(this.mt[s]^(1664525*((4294901760&n)>>>16)<<16)+1664525*(65535&n))+t[h]+h,this.mt[s]>>>=0,h++,++s>=this.N&&(this.mt[0]=this.mt[this.N-1],s=1),h>=i&&(h=0)}for(m=this.N-1;m;m--){n=this.mt[s-1]^this.mt[s-1]>>>30;this.mt[s]=(this.mt[s]^(1566083941*((4294901760&n)>>>16)<<16)+1566083941*(65535&n))-s,this.mt[s]>>>=0,++s>=this.N&&(this.mt[0]=this.mt[this.N-1],s=1)}this.mt[0]=2147483648},MersenneTwister.prototype.genrand_int32=function(){var t,i=new Array(0,this.MATRIX_A);if(this.mti>=this.N){var s;for(this.mti==this.N+1&&this.init_genrand(5489),s=0;s<this.N-this.M;s++)t=this.mt[s]&this.UPPER_MASK|this.mt[s+1]&this.LOWER_MASK,this.mt[s]=this.mt[s+this.M]^t>>>1^i[1&t];for(;s<this.N-1;s++)t=this.mt[s]&this.UPPER_MASK|this.mt[s+1]&this.LOWER_MASK,this.mt[s]=this.mt[s+(this.M-this.N)]^t>>>1^i[1&t];t=this.mt[this.N-1]&this.UPPER_MASK|this.mt[0]&this.LOWER_MASK,this.mt[this.N-1]=this.mt[this.M-1]^t>>>1^i[1&t],this.mti=0}return t=this.mt[this.mti++],t^=t>>>11,t^=t<<7&2636928640,t^=t<<15&4022730752,(t^=t>>>18)>>>0},MersenneTwister.prototype.random=function(){return this.genrand_int32()*(1/4294967296)};
+        var rand = new MersenneTwister();
+        var isMobile = false;
+        var showHeader = true;
+        var MAX_STEPS = 3;
+        var DICE_CONFIG = {
+            width: 128, // Desktop version, mobile is divided by 2
+            height: 128, // Desktop version, mobile is divided by 2
+            defaultFill: 'white',
+            luckFill: '#FFEAC1',
+            successOpacity: 1,
+            failOpacity: 0.65,
+        };
+        /*
+         * Steps to performing a resolution:
+         * 0: Choose the count of dice
+         * 1: Choose number of dice to allocate to Fickle
+         * 2: Luck dice to Fickle or Flat
+         * 3: Roll and results
+         */
+        var resolutionStep = 0;
+        var totalDice, fickleDice, flatDice, luckFickle, difficulty, results;
+        
+        function D6() {
+            return 1 + Math.floor(rand.random() * 6);
+        }
+        
+        function init() {
+            // Determine if we're on a mobile device
+            isMobile = window.matchMedia("only screen and (max-width: 680px)").matches;
+            
+            // Toggle our header to default away
+            if (isMobile) {
+                hideHeaderMessage();
+            }
+            
+            // Setup our key listeners for easy use
+            setupListeners();
+            
+            // Fresh setup
+            restart(true);
+            
+            // Hide our header message after a lot of time
+            setTimeout(function() {
+                hideHeaderMessage();
+            }, (10 * 60 * 1000));
+        }
+        
+        /**
+         * Setup and manage hotkeys for faster/easier use by people
+         */
+        function setupListeners() {
+            window.addEventListener("keyup", function(e) {
+                if (e && typeof e.key !== 'undefined') {
+                    switch (e.key.toLowerCase()) {
+                        case '0': chooseDice(0); break;
+                        case '1': chooseDice(1); break;
+                        case '2': chooseDice(2); break;
+                        case '3': chooseDice(3); break;
+                        case '4': chooseDice(4); break;
+                        case '5': chooseDice(5); break;
+                        case '6': chooseDice(6); break;
+                        case '7': chooseDice(7); break;
+                        case '8': chooseDice(8); break;
+                        case '9': chooseDice(9); break;
+                        case 'c': nextStep(); break; // Continue
+                        case 'b': case 'backspace': prevStep(); break; // Back
+                        case 'r': if (resolutionStep === 3) { rollItBaby(); } break;
+                        case 'y': chooseLuckFickle(true); break;
+                        case 'n': chooseLuckFickle(false); break;
+                        case 'h': toggleHeaderMessage(); break;
+                    }
+                }
+            });
+        }
+        
+        function restart(firstRun) {
+            // Only reset our total dice on a first run
+            // Otherwise remember what the user chose in case it's a common roll
+            if (firstRun) {
+                totalDice = 5;
+                fickleDice = 1;
+                flatDice = totalDice - fickleDice;
+                luckFickle = true;
+            }
+            difficulty = 5;
+            results = {
+                luckDice: -1,
+                fickleDice: [],
+                flatSuccesses: -1
+            };
+            changeStep(0);
+        }
+        
+        function hideHeaderMessage() {
+            showHeader = false;
+            hideEle('headerMessage');
+        }
+        
+        function toggleHeaderMessage() {
+            if (showHeader) {
+                hideEle('headerMessage');
+            }
+            else {
+                showEle('headerMessage');
+            }
+            showHeader = !showHeader;
+        }
+        
+        function hideAllPrompts() {
+            hideEle('totalCount');
+            hideEle('fickleCount');
+            hideEle('luckChoice');
+            hideEle('rollResults');
+        }
+        
+        function hideEle(id) {
+            var hideEle = document.getElementById(id);
+            if (hideEle) {
+                hideEle.style.display = 'none';
+            }
+        }
+        
+        function showEle(id, focusId, selectOption) {
+            var showEle = document.getElementById(id);
+            if (showEle) {
+                showEle.style.display = 'block';
+                
+                // Focus an element if desired
+                if (typeof focusId !== 'undefined') {
+                    var focusEle = document.getElementById(focusId);
+                    if (focusEle) {
+                        focusEle.focus();
+                    }
+                    
+                    // Reset a dropdown value if desired
+                    if (typeof selectOption !== 'undefined') {
+                        updateDropdown(focusId, selectOption);
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Dump the passed value into a span for the user to see
+         */
+        function outputVar(spanId, value) {
+            var spanEle = document.getElementById(spanId);
+            if (spanEle) {
+                spanEle.innerHTML = value;
+            }
+        }
+        
+        /**
+         * Apply the passed value to a dropdown with the matching ID
+         */
+        function updateDropdown(id, value) {
+            var dropdownEle = document.getElementById(id);
+            if (dropdownEle) {
+                dropdownEle.value = value;
+            }
+        }
+        
+        /**
+         * Get an integer value from a dropdown
+         */
+        function getDropdownNum(id, defaultVal) {
+            var dropdown = document.getElementById(id);
+            if (dropdown) {
+                if (!isNaN(parseInt(dropdown.value))) {
+                    return parseInt(dropdown.value);
+                }
+            }
+            return defaultVal;
+        }
+        
+        /**
+         * Get a boolean value from a dropdown
+         */
+        function getDropdownBoolean(id, defaultVal) {
+            var dropdown = document.getElementById(id);
+            if (dropdown) {
+                if (typeof dropdown.value === 'string') {
+                    return dropdown.value === 'true';
+                }
+                else if (typeof dropdown.value === 'boolean') {
+                    return dropdown.value;
+                }
+            }
+            return defaultVal;
+        }
+        
+        /**
+         * Create an SVG image for the passed dice value
+         * This will use the current 'difficulty' to also shade the dice if it's a failure
+         * If marked as a Luck Dice a different color will be used
+         * See DICE_CONFIG for tweaks to the size/colors/etc.
+         */
+        function makeDice(val, isLuck) {
+            var width = DICE_CONFIG.width;
+            var height = DICE_CONFIG.height;
+            var fill = DICE_CONFIG.defaultFill;
+            var fillOpacity = DICE_CONFIG.successOpacity;
+            
+            // Dim any failed dice
+            if (val < (isLuck ? difficulty-1 : difficulty)) {
+                fillOpacity = DICE_CONFIG.failOpacity;
+            }
+            
+            // Color our Luck dice differently, just like the simulators!
+            if (isLuck) {
+                fill = DICE_CONFIG.luckFill;
+            }
+            
+            // Reduce our image size for mobile
+            if (isMobile) {
+                width = Math.floor(width/2);
+                height = Math.floor(height/2);
+            }
+            
+            // Dice SVG images of 1-6 thanks to https://game-icons.net/
+            var toReturn;
+            switch (val) {
+                case 1:
+                    toReturn = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: ' + height + 'px; width: ' + width + 'px;"><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M74.5 36A38.5 38.5 0 0 0 36 74.5v363A38.5 38.5 0 0 0 74.5 476h363a38.5 38.5 0 0 0 38.5-38.5v-363A38.5 38.5 0 0 0 437.5 36h-363zM256 206a50 50 0 0 1 0 100 50 50 0 0 1 0-100z" fill="' + fill + '" fill-opacity="' + fillOpacity + '"></path></g></svg>';
+                 break;
+                case 2:
+                    toReturn = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: ' + height + 'px; width: ' + width + 'px;"><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M74.5 36A38.5 38.5 0 0 0 36 74.5v363A38.5 38.5 0 0 0 74.5 476h363a38.5 38.5 0 0 0 38.5-38.5v-363A38.5 38.5 0 0 0 437.5 36h-363zm316.97 36.03A50 50 0 0 1 440 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm-268 268A50 50 0 0 1 172 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97z" fill="' + fill + '" fill-opacity="' + fillOpacity + '"></path></g></svg>'
+                 break;
+                case 3:
+                    toReturn = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: ' + height + 'px; width: ' + width + 'px;"><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M74.5 36A38.5 38.5 0 0 0 36 74.5v363A38.5 38.5 0 0 0 74.5 476h363a38.5 38.5 0 0 0 38.5-38.5v-363A38.5 38.5 0 0 0 437.5 36h-363zm316.97 36.03A50 50 0 0 1 440 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zM256 206a50 50 0 0 1 0 100 50 50 0 0 1 0-100zM123.47 340.03A50 50 0 0 1 172 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97z" fill="' + fill + '" fill-opacity="' + fillOpacity + '"></path></g></svg>';
+                 break;
+                case 4:
+                    toReturn = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: ' + height + 'px; width: ' + width + 'px;"><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M74.5 36A38.5 38.5 0 0 0 36 74.5v363A38.5 38.5 0 0 0 74.5 476h363a38.5 38.5 0 0 0 38.5-38.5v-363A38.5 38.5 0 0 0 437.5 36h-363zm48.97 36.03A50 50 0 0 1 172 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm268 0A50 50 0 0 1 440 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm-268 268A50 50 0 0 1 172 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm268 0A50 50 0 0 1 440 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97z" fill="' + fill + '" fill-opacity="' + fillOpacity + '"></path></g></svg>';
+                 break;
+                case 5:
+                    toReturn = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: ' + height + 'px; width: ' + width + 'px;"><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M74.5 36A38.5 38.5 0 0 0 36 74.5v363A38.5 38.5 0 0 0 74.5 476h363a38.5 38.5 0 0 0 38.5-38.5v-363A38.5 38.5 0 0 0 437.5 36h-363zm48.97 36.03A50 50 0 0 1 172 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm268 0A50 50 0 0 1 440 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zM256 206a50 50 0 0 1 0 100 50 50 0 0 1 0-100zM123.47 340.03A50 50 0 0 1 172 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm268 0A50 50 0 0 1 440 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97z" fill="' + fill + '" fill-opacity="' + fillOpacity + '"></path></g></svg>';
+                 break;
+                case 6:
+                    toReturn = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: ' + height + 'px; width: ' + width + 'px;"><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M74.5 36A38.5 38.5 0 0 0 36 74.5v363A38.5 38.5 0 0 0 74.5 476h363a38.5 38.5 0 0 0 38.5-38.5v-363A38.5 38.5 0 0 0 437.5 36h-363zm48.97 36.03A50 50 0 0 1 172 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm268 0A50 50 0 0 1 440 122a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zM122 206a50 50 0 0 1 0 100 50 50 0 0 1 0-100zm268 0a50 50 0 0 1 0 100 50 50 0 0 1 0-100zM123.47 340.03A50 50 0 0 1 172 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97zm268 0A50 50 0 0 1 440 390a50 50 0 0 1-100 0 50 50 0 0 1 51.47-49.97z" fill="' + fill + '" fill-opacity="' + fillOpacity + '"></path></g></svg>';
+                 break;
+            }
+            
+            return toReturn;
+        }
+        
+        function chooseDice(num) {
+            if (typeof num !== 'undefined') {
+                // Total count of dice
+                if (resolutionStep === 0) {
+                    totalDice = num;
+                    nextStep();
+                }
+                // Allocate to Fickle
+                else if (resolutionStep === 1) {
+                    // Ensure our number is within the valid total dice, otherwise ignore it
+                    if (num > totalDice) {
+                        return;
+                    }
+                    
+                    fickleDice = num;
+                    flatDice = totalDice - num;
+                    nextStep();
+                }
+                // On results we change the difficulty
+                // So not really a dice, but a number the user can press
+                else if (resolutionStep === 3) {
+                    if (num >= 3 && num <= 6) {
+                        difficulty = num;
+                        showEle('rollResults', 'difficulty', difficulty);
+                        showResults(true);
+                    }
+                }
+                // Otherwise not a dice step
+            }
+        }
+        
+        function chooseLuckFickle(answer) {
+            if (resolutionStep === 2) {
+                luckFickle = answer;
+                updateDropdown('luckFickle', luckFickle);
+                nextStep();
+            }
+        }
+        
+        function difficultyChanged(newVal) {
+            difficulty = newVal;
+            showResults(true);
+        }
+        
+        function nextStep() {
+            changeStep(resolutionStep+1);
+        }
+        
+        function prevStep() {
+            changeStep(resolutionStep-1);
+        }
+        
+        function changeStep(newStep) {
+            resolutionStep = newStep;
+            
+            // Reset steps if we're out of bounds
+            if (resolutionStep < 0 || resolutionStep > MAX_STEPS) {
+                resolutionStep = 0;
+            }
+            
+            // Hide everything first, then show the prompt we need
+            hideAllPrompts();
+            
+            // Total count of dice
+            if (resolutionStep === 0) {
+                showEle('totalCount', 'totalDice', totalDice);
+            }
+            // Allocate to Fickle
+            else if (resolutionStep === 1) {
+                totalDice = getDropdownNum('totalDice', totalDice);
+                
+                // Fill our dropdown
+                var fickleDropdown = document.getElementById('fickleDice');
+                if (fickleDropdown) {
+                    // Clear our old options
+                    while (fickleDropdown.options.length > 0) {                
+                        fickleDropdown.remove(0);
+                    }
+                    
+                    if (totalDice > 0) {
+                        // Then populate the list with our total dice
+                        for (var diceLoop = 1; diceLoop <= totalDice; diceLoop++) {
+                            fickleDropdown.add(new Option(diceLoop + ' of ' + totalDice, diceLoop));
+                        }
+                    }
+                    else {
+                        fickleDropdown.add(new Option(0));
+                    }
+                }
+                
+                // If our old Fickle dice var is out of range, reset it
+                if (fickleDice > totalDice) {
+                    fickleDice = totalDice;
+                }
+                
+                showEle('fickleCount', 'fickleDice', fickleDice);
+                outputVar('totalDiceOut', totalDice);
+            }
+            // Luck dice
+            else if (resolutionStep === 2) {
+                fickleDice = getDropdownNum('fickleDice', fickleDice);
+                flatDice = totalDice - fickleDice;
+                
+                showEle('luckChoice', 'luckFickle', luckFickle);
+            }
+            // Roll results
+            else if (resolutionStep === 3) {
+                luckFickle = getDropdownBoolean('luckFickle', luckFickle);
+                
+                // Another rare case where we have 0 total dice, 0 Fickle, and the user tried to put Luck to Flat
+                // Instead of getting fancy we're just going to reset the choice to Fickle
+                if (totalDice === 0 && fickleDice === 0) {
+                    luckFickle = true;
+                }
+                
+                showEle('rollResults', 'difficulty', difficulty);
+                rollItBaby();
+            }
+        }
+        
+        /**
+         * Roll the allocated Fickle dice and the Luck Dice if needed
+         * This will show the results after
+         */
+        function rollItBaby() {
+            results = {
+                luckDice: -1,
+                fickleDice: [],
+                flatSuccesses: flatDice
+            };
+            
+            for (var handful = 0; handful < fickleDice; handful++) {
+                results.fickleDice.push(D6());
+            }
+            results.fickleDice.sort();
+            
+            if (luckFickle === true) {
+                results.luckDice = D6();
+            }
+            else {
+                results.luckDice = -1;
+                results.flatSuccesses += 2;
+            }
+            
+            showResults();
+        }
+        
+        /**
+         * Make our dice images and populate the necessary HTML panel
+         * The 'silent' flag just stops a console.log from being done
+         */
+        function showResults(silent) {
+            // Update our success message
+            var successes = 0;
+            for (var check = 0; check < results.fickleDice.length; check++) {
+                if (results.fickleDice[check] >= difficulty) {
+                    successes++;
+                }
+            }
+            if (luckFickle === true && results.luckDice >= (difficulty-1)) {
+                successes++;
+            }
+            if (successes > 0) {
+                successes += results.flatSuccesses;
+            }
+            outputVar('totalSuccesses', successes);
+            
+            var resPanel = document.getElementById('rollPanel');
+            if (resPanel) {
+                // Show dice images
+                resPanel.style.width = 'auto';
+                var html = '';
+                var breakAt = -1;
+                
+                // If we have more than 6 dice (desktop) or 4 dice (mobile) split them nicely
+                if (results.fickleDice.length > (isMobile ? 4 : 6)) {
+                    breakAt = Math.ceil(results.fickleDice.length / 2);
+                    
+                    // If we have even MORE dice then increase the width of our panel
+                    if (!isMobile && results.fickleDice.length > 10) {
+                        resPanel.style.width = '1000px';
+                    }
+                }
+                
+                // Loop and add SVG images for our dice
+                for (var loop = 0; loop < results.fickleDice.length; loop++) {
+                    html += makeDice(results.fickleDice[loop]);
+                    
+                    // Break the line as desired
+                    if (breakAt > 0 && loop > 0 && ((loop+1) % breakAt === 0)) {
+                        html += '<br/>';
+                    }
+                }
+                
+                // Append the Luck dice
+                if (luckFickle === true) {
+                    html += makeDice(results.luckDice, true);
+                }
+                
+                // Add a note on Flat successes
+                html += '<div class="flatMessage">plus ' + flatDice + ' Flat Dice';
+                if (luckFickle === false) {
+                    html += ' (and Luck Dice)';
+                }
+                html += '</div>';
+                
+                resPanel.innerHTML = html;
+            }
+            
+            if (!silent) {
+                // Log to the console, in case nerds are reading
+                var message = totalDice + ' dice pool, used ' + fickleDice + ' as Fickle (' + results.fickleDice + ')';
+                if (luckFickle === true) {
+                    message += ' and Luck Dice of ' + results.luckDice;
+                }
+                message += ' plus ' + results.flatSuccesses + ' Flat';
+                if (luckFickle === false) {
+                    message += ' (includes Luck Dice)';
+                }
+                message += ' = ' + successes + ' Successes vs difficulty ' + difficulty;
+                console.log(message);
+            }
+        }
+    </script>
+</head>
+<body onload="init()">
+    <div id="headerMessage" class="headerBox">
+        Welcome to the <a href="https://horizongamesblog.wordpress.com/fickle-rpg/" target="_blank">Fickle RPG</a> dice roller! Have a few practice throws and good luck!<br/>
+        Hotkeys: <b>Number keys</b> for dropdowns, <b>C</b> to continue, <b>B</b> to go back a step, <b>Y</b>/<b>N</b> for Luck Dice going to Fickle, <b>R</b> to re-roll the same setup, <b>C</b> to clear and do a new roll
+    </div>
+    
+    <button onclick="toggleHeaderMessage()" class="headerButton" title="Welcome message and learn a few hotkeys"><u>H</u>elp</button>
+
+    <div id="totalCount" class="promptBox">
+        <div class="promptHeader">
+            <span class="stepNote">1/3</span>
+            Dice Pool Size
+        </div>
+        <div class="promptContent">
+            <select id="totalDice" class="bigDropdown">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+            </select>
+            <button onclick="nextStep();">&gt; <u>C</u>ontinue</button>
+            <br/><br/>
+            This would be Attribute + Skill (if applicable)
+        </div>
+    </div>
+    
+    <div id="fickleCount" class="promptBox" style="display: none;">
+        <div class="promptHeader">
+            <span class="stepNote">2/3</span>
+            Allocate to Fickle
+        </div>
+        <div class="promptContent">
+            <select id="fickleDice" class="bigDropdown">
+            </select>
+            <button onclick="nextStep();">&gt; <u>C</u>ontinue</button>
+            <button onclick="prevStep();"><u>B</u>ack</button>
+            <br/><br/>
+            Each Fickle dice will be rolled and counts as 1 Success on<br/>4+ (Easy), 5+ (Normal), 6+ (Hard)<br/>
+            <br/>
+            The rest of the dice will be allocated to Flat.
+        </div>
+    </div>
+    
+    <div id="luckChoice" class="promptBox" style="display: none;">
+        <div class="promptHeader">
+            <span class="stepNote">3/3</span>
+            Choose Luck Dice
+        </div>
+        <div class="promptContent">
+            <select id="luckFickle" class="bigDropdown">
+                <option value="true">Fickle</option>
+                <option value="false">Flat</option>
+            </select>
+            <button onclick="nextStep();">&#9861; <u>C</u>ontinue</button>
+            <button onclick="prevStep();"><u>B</u>ack</button>
+            <br/><br/>
+            If you choose <b>Fickle</b> then the Luck Dice is one step easier for difficulty (so Normal becomes Easy).<br/>
+            <br/>
+            Otherwise if you choose <b>Flat</b> then the Luck Dice counts as 2 Successes (if your Fickle roll passes).
+        </div>
+    </div>
+    
+    <div id="rollResults" class="centerBox" style="display: none;">
+        <center>
+            <div class="successMessage">Successes<br/><span id="totalSuccesses" class="successNum"></span></div>
+            <br/><br/>
+            <select id="difficulty" class="medDropdown" onchange="difficultyChanged(this.value)">
+                <option value="3">3+ (Trivial)</option>
+                <option value="4">4+ (Easy)</option>
+                <option value="5">5+ (Normal)</option>
+                <option value="6">6+ (Hard)</option>
+            </select>
+            <br/><br/>
+            <div id="rollPanel"></div>
+            <br/>
+            <button onclick="rollItBaby()" title="Re-roll with the same setup"><u>R</u>e-roll</button>
+            <button onclick="nextStep()" title="Setup an entirely new roll"><u>C</u>ancel</button>
+        </center>
+    </div>
+</body>
+</html>
