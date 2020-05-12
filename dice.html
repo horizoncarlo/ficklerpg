@@ -1,4 +1,4 @@
-<!-- Version 0.92 -->
+<!-- Version 0.93 -->
 <html>
 <head>
     <title>Fickle RPG - Dice Roller</title>
@@ -23,11 +23,23 @@
         }
         
         button {
+            font: inherit;
+            cursor: pointer;
             font-size: 1em;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            margin: 2px 0;
+            padding: 0.5em 1em;
+            border: outset 2px transparent;
+            border-radius: 4px;
+            color: white;
+            background-color: #2D7575;
         }
         
-        button:hover, input:hover {
-            opacity: 0.75;
+        button:hover {
+            border-color: #47B8B8;
+            text-shadow: 0 0 10px white;
         }
         
         a, a:visited {
@@ -48,6 +60,17 @@
             -webkit-transform: scale(1.2);
             -o-transform: scale(1.2);
             transform: scale(1.2);
+        }
+        
+        .medDropdown {
+            font-size: 1.5em;
+        }
+        
+        .bigDropdown {
+            font-size: 1.8em;
+            min-width: 125px;
+            height: 40px;
+            vertical-align: top;
         }
         
         .headerBox {
@@ -181,19 +204,26 @@
             color: #DD0000;
         }
         
-        .medDropdown {
-            font-size: 1.5em;
-        }
-        
-        .bigDropdown {
-            font-size: 1.8em;
-            min-width: 125px;
-        }
-        
-        /* Mobile slum bois */
+        /* Mobile Styling */
         @media only screen and (max-width: 680px) {
             body {
                 font-size: 14px;
+            }
+            
+            input[type="checkbox"] {
+                -ms-transform: scale(1.5);
+                -moz-transform: scale(1.5);
+                -webkit-transform: scale(1.5);
+                -o-transform: scale(1.5);
+                transform: scale(1.5);
+            }
+            
+            .bottomLeftPanel {
+                font-size: larger;
+            }
+            
+            .headerBox, .bottomRightPanel {
+                display: none;
             }
             
             .promptBox {
@@ -210,7 +240,7 @@
                 max-width: none;
                 width: 96%;
                 padding: 15px 0 15px 0;
-                border-radius: 0;
+                border-radius: 10px;
             }
             
             .rollPanel {
@@ -316,14 +346,6 @@
             // Determine if we're on a mobile device
             isMobile = window.matchMedia("only screen and (max-width: 680px)").matches;
             
-            // Show or hide the welcome message on desktop vs mobile
-            if (!isMobile) {
-                showHeaderMessage();
-            }
-            else {
-                hideHeaderMessage();
-            }
-            
             // Setup our key listeners for easy use
             setupListeners();
             
@@ -331,9 +353,12 @@
             restart(true);
             
             // Hide our header message after a lot of time
-            setTimeout(function() {
-                hideHeaderMessage();
-            }, (10 * 60 * 1000));
+            // Not needed on mobile as we don't use the header bar
+            if (!isMobile) {
+                setTimeout(function() {
+                    hideHeaderMessage();
+                }, (10 * 60 * 1000));
+            }
         }
         
         /**
@@ -708,15 +733,6 @@
                 results.flatSuccesses += 2;
             }
             
-            // If we don't have any explodable dice, just ignore the Underdog bonus
-            results.allowUnderdog = results.luckDice >= 6 ? true : false;
-            for (var explodeCheck = 0; explodeCheck < results.fickleDice.length; explodeCheck++) {
-                if (results.fickleDice[explodeCheck] >= 6) {
-                    results.allowUnderdog = true;
-                    break;
-                }
-            }
-            
             updateUnderdogButton();
             showResults();
         }
@@ -786,7 +802,7 @@
             // Update our Underdog button
             var underdogButton = document.getElementById('underdogButton');
             if (underdogButton) {
-                underdogButton.disabled = !results.allowUnderdog;
+                underdogButton.style.display = results.allowUnderdog ? 'inline-block' : 'none';
             }
         }
         
@@ -835,7 +851,7 @@
     </script>
 </head>
 <body onload="init()">
-    <div id="headerMessage" class="headerBox" style="display: none;">
+    <div id="headerMessage" class="headerBox">
         Welcome to the <a href="https://horizongamesblog.wordpress.com/fickle-rpg/" target="_blank">Fickle RPG</a> dice roller! Have a few practice throws and good luck!<br/>
         Hotkeys: <b>Number keys</b> for dropdowns, <b>C</b> to continue, <b>B</b> to go back a step, <b>Y</b>/<b>N</b> for Luck Dice going to Fickle, <b>R</b> to re-roll the same setup, <b>U</b> for the Underdog Bonus, <b>C</b> to clear and do a new roll
     </div>
@@ -903,7 +919,7 @@
                 <option value="true">Fickle</option>
                 <option value="false">Flat</option>
             </select>
-            <button onclick="nextStep();">&#9861; <u>C</u>ontinue</button>
+            <button onclick="nextStep();">> <u>C</u>ontinue</button>
             <button onclick="prevStep();"><u>B</u>ack</button>
             <br/><br/>
             If you choose <b>Fickle</b> then the Luck Dice is one step easier for difficulty (so Normal becomes Easy).<br/>
