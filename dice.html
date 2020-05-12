@@ -316,8 +316,11 @@
             // Determine if we're on a mobile device
             isMobile = window.matchMedia("only screen and (max-width: 680px)").matches;
             
-            // Toggle our header to default away
-            if (isMobile) {
+            // Show or hide the welcome message on desktop vs mobile
+            if (!isMobile) {
+                showHeaderMessage();
+            }
+            else {
                 hideHeaderMessage();
             }
             
@@ -385,14 +388,18 @@
             hideEle('headerMessage');
         }
         
+        function showHeaderMessage() {
+            showHeader = true;
+            showEle('headerMessage');
+        }
+        
         function toggleHeaderMessage() {
             if (showHeader) {
-                hideEle('headerMessage');
+                hideHeaderMessage();
             }
             else {
-                showEle('headerMessage');
+                showHeaderMessage();
             }
-            showHeader = !showHeader;
         }
         
         function hideAllPrompts() {
@@ -828,7 +835,7 @@
     </script>
 </head>
 <body onload="init()">
-    <div id="headerMessage" class="headerBox">
+    <div id="headerMessage" class="headerBox" style="display: none;">
         Welcome to the <a href="https://horizongamesblog.wordpress.com/fickle-rpg/" target="_blank">Fickle RPG</a> dice roller! Have a few practice throws and good luck!<br/>
         Hotkeys: <b>Number keys</b> for dropdowns, <b>C</b> to continue, <b>B</b> to go back a step, <b>Y</b>/<b>N</b> for Luck Dice going to Fickle, <b>R</b> to re-roll the same setup, <b>U</b> for the Underdog Bonus, <b>C</b> to clear and do a new roll
     </div>
