@@ -1,4 +1,4 @@
-<!-- Version 0.93 -->
+<!-- Version 0.94 -->
 <html>
 <head>
     <title>Fickle RPG - Dice Roller</title>
@@ -15,7 +15,7 @@
         }
         
         body {
-            font-family: monospace;
+            font-family: "Fira Mono", "DejaVu Sans Mono", "Menlo", "Consolas", "Liberation Mono", "Monaco", "Lucida Console", monospace;
             font-size: 16px;
             overflow-x: auto;
             overflow-y: scroll;
@@ -156,10 +156,6 @@
             border: 1px solid black;
             border-top: 0;
             min-height: 200px;
-        }
-        
-        .rollPanel {
-            width: 532px; /* 4 columns of 128px dice plus padding */
         }
         
         .shakingDiceWrap {
@@ -378,13 +374,35 @@
                         case '7': chooseDice(7); break;
                         case '8': chooseDice(8); break;
                         case '9': chooseDice(9); break;
-                        case 'c': nextStep(); break; // Continue
-                        case 'b': case 'backspace': prevStep(); break; // Back
-                        case 'r': if (resolutionStep === 3) { rollItBaby(); } break;
-                        case 'u': if (resolutionStep === 3) { underdogBonus(); } break;
-                        case 'y': if (resolutionStep === 2) { chooseLuckFickle(true); } break;
-                        case 'n': if (resolutionStep === 2) { chooseLuckFickle(false); } break;
-                        case 'h': toggleHeaderMessage(); break;
+                        case 'c': // Continue
+                            nextStep();
+                        break;
+                        case 'b': case 'backspace': // Back
+                            prevStep();
+                        break;
+                        case 'r':
+                            if (resolutionStep === 3 && !isFetchingRemote()) {
+                                rollItBaby();
+                            }
+                        break;
+                        case 'u':
+                            if (resolutionStep === 3 && !isFetchingRemote()) {
+                                underdogBonus();
+                            }
+                        break;
+                        case 'y':
+                            if (resolutionStep === 2) {
+                                chooseLuckFickle(true);
+                            }
+                        break;
+                        case 'n':
+                            if (resolutionStep === 2) {
+                                chooseLuckFickle(false);
+                            }
+                        break;
+                        case 'h':
+                            toggleHeaderMessage();
+                        break;
                     }
                 }
             });
@@ -619,6 +637,11 @@
         }
         
         function changeStep(newStep) {
+            // Before we do anything ignore the change request if we're loading/rolling random.org dice
+            if (isFetchingRemote()) {
+                return;
+            }
+            
             resolutionStep = newStep;
             
             // Reset steps if we're out of bounds
@@ -724,6 +747,14 @@
             }
         }
         
+        function isFetchingRemote() {
+            var loadCheck = document.getElementById('shakingDiceWrap');
+            if (loadCheck && loadCheck.style.display !== 'none') {
+                return true;
+            }
+            return false;
+        }
+        
         function preShowResults() {
             if (luckFickle === true) {
                 results.luckDice = D6();
@@ -762,6 +793,22 @@
             
             var resPanel = document.getElementById('rollPanel');
             if (resPanel) {
+                // Check if we need to make our dice panel wider
+                // By default we have 4 dice on each row
+                // But in corner cases of a huge number of dice we want to use 5 or even 6 columns
+                // This is only on desktop, as mobile just fits as many as we can
+                if (!isMobile) {
+                    var numCols = 4;
+                    if ((results.fickleDice.length + (luckFickle ? 1 : 0)) > 12) {
+                        numCols = 5;
+                    }
+                    if ((results.fickleDice.length + (luckFickle ? 1 : 0)) > 15) {
+                        numCols = 6;
+                    }
+                    
+                    resPanel.style.width = (numCols * 128 + 20) + 'px'; // Add 20px of padding too
+                }
+                
                 // Loop and add SVG images for our dice
                 var html = '';
                 for (var loop = 0; loop < results.fickleDice.length; loop++) {
